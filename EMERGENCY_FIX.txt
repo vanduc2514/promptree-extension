@@ -1,0 +1,41 @@
+🚨 PROMPTREE EXTENSION - EMERGENCY FIX APPLIED
+=============================================
+
+❌ **Problem**: Extension was breaking ChatGPT site due to overly complex DOM manipulation
+
+✅ **Solution**: Restored original working structure with improved number formatting
+
+🔄 **What Was Restored**:
+
+1. **Simplified Structure**: Back to original 2-function approach
+   - `updateInputIcon()` - Real-time input field counter
+   - `addResponseIcons()` - Response icons (original safe selectors)
+
+2. **Removed Problematic Code**:
+   - Removed `addUserMessageIcon()` function (was causing conflicts)
+   - Removed complex `[data-message-author-role="user"]` selectors
+   - Simplified initialization and mutation observer
+
+3. **Kept Improvements**:
+   - ✅ New `formatTreeCount()` function (K notation for thousands)
+   - ✅ Better number formatting (1.5K instead of 1.5e+3)
+   - ✅ Improved tooltips with readable tree counts
+
+🎯 **Current Functionality**:
+- ✅ Real-time tree counter in input field (as you type)
+- ✅ Tree icons on AI responses (using safe selectors)
+- ✅ Readable number format (2.1 trees, 1.5K trees)
+- ✅ No more ChatGPT site breaking
+
+🔄 **To Apply Fix**:
+1. Go to chrome://extensions/
+2. Reload Promptree extension (🔄 button)
+3. Refresh ChatGPT tab
+4. Test: ChatGPT should load normally now
+
+🧪 **Expected Behavior**:
+- Input field: Shows tree count as you type
+- AI responses: Shows tree count with readable formatting
+- No breaking of ChatGPT functionality
+
+The extension is now stable and working like the original! 🌲

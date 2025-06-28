@@ -1,0 +1,40 @@
+🌲 PROMPTREE EXTENSION UPDATES APPLIED
+======================================
+
+✅ CHANGES IMPLEMENTED:
+
+1. 🔢 **Tree Count Formatting**:
+   - Normal numbers instead of scientific notation
+   - Uses "K" suffix for thousands (e.g., "1.5K trees")
+   - Better readability for all ranges
+
+2. 📍 **User Message Icons**:
+   - Tree icon appears ONLY below user message bubble
+   - No more real-time input tracking
+   - Clean placement after sending message
+
+3. 📋 **AI Response Icons**:
+   - Tree icon appears at the END of AI responses
+   - Separate section with subtle border
+   - Not mixed with response content
+
+🔄 TO APPLY CHANGES:
+
+1. Go to chrome://extensions/
+2. Find "Promptree" extension
+3. Click the refresh/reload button (🔄) on the extension card
+4. Refresh your ChatGPT tab
+
+🧪 TESTING THE UPDATES:
+
+1. **Send a message to ChatGPT**
+2. **Look for**: Tree icon below YOUR message bubble
+3. **Wait for AI response**
+4. **Look for**: Tree icon at the end of AI response in separate section
+5. **Check formatting**: Should show "X.X trees" or "X.XK trees"
+
+Expected behavior:
+- User message: "🌲 2.1 trees" (below your message)
+- AI response: "🌲 15.3 trees" (at end, separate section)
+
+Ready to test the improved extension! 🚀

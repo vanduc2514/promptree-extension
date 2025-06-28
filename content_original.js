@@ -172,23 +172,6 @@ function calculateTrees(tokenCount) {
 }
 
 /**
- * Formats tree count for display with K notation for thousands
- */
-function formatTreeCount(trees) {
-  if (trees >= 1000) {
-    return `${(trees / 1000).toFixed(1)}K`;
-  } else if (trees >= 1) {
-    return trees.toFixed(1);
-  } else if (trees >= 0.1) {
-    return trees.toFixed(2);
-  } else if (trees >= 0.01) {
-    return trees.toFixed(3);
-  } else {
-    return trees.toExponential(1);
-  }
-}
-
-/**
  * Gets a more detailed tooltip with calculation breakdown
  */
 function getDetailedTooltip(tokens, trees) {
@@ -200,7 +183,7 @@ function getDetailedTooltip(tokens, trees) {
 ~${kwh} kWh energy
 ~${gco2} g CO2 emissions
 @ ${currentCarbonIntensity} gCO2/kWh
-≈ ${formatTreeCount(trees)} trees needed`;
+≈ ${trees.toExponential(2)} trees needed`;
 }
 
 function updateInputIcon() {
@@ -246,7 +229,7 @@ function updateInputIcon() {
   const trees = calculateTrees(tokens);
 
   if (tokens > 0) {
-    icon.textContent = `🌲 ${formatTreeCount(trees)} trees`;
+    icon.textContent = `🌲 ${trees.toExponential(2)}`;
     icon.title = getDetailedTooltip(tokens, trees);
     icon.style.display = 'block';
   } else {
@@ -255,88 +238,61 @@ function updateInputIcon() {
 }
 
 function addResponseIcons() {
-  // Look for AI assistant messages
-  const assistantMessages = document.querySelectorAll('[data-message-author-role="assistant"]');
+  // Multiple selectors to catch different ChatGPT layouts
+  const responseSelectors = [
+    '.group.w-full',
+    '[data-message-author-role="assistant"]',
+    '.markdown',
+    '.prose',
+    '[class*="conversation"]',
+    '[class*="message"]'
+  ];
 
-  assistantMessages.forEach(messageElement => {
-    if (messageElement.querySelector('.promptree-assistant-icon')) return;
+  let responseElements = [];
+  for (const selector of responseSelectors) {
+    const elements = document.querySelectorAll(selector);
+    responseElements = responseElements.concat(Array.from(elements));
+  }
 
-    const textContent = messageElement.textContent.trim();
-    if (!textContent) return;
+  responseElements.forEach(response => {
+    if (response.querySelector('.promptree-response-icon')) return;
 
-    const tokens = estimateTokens(textContent);
-    const trees = calculateTrees(tokens);
+    // Try different text content selectors
+    const textElement = response.querySelector('.prose') ||
+                       response.querySelector('.markdown') ||
+                       response.querySelector('[class*="text"]') ||
+                       response;
 
-    // Create tree icon container at the end of the response in a separate section
-    const iconContainer = document.createElement('div');
-    iconContainer.className = 'promptree-assistant-icon';
-    iconContainer.style.cssText = `
-      margin-top: 12px;
-      padding-top: 8px;
-      border-top: 1px solid rgba(0, 0, 0, 0.1);
-      text-align: left;
-      font-size: 12px;
-      color: #059669;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      font-weight: 500;
-    `;
+    if (textElement && textElement.textContent.trim()) {
+      const tokens = estimateTokens(textElement.textContent);
+      const trees = calculateTrees(tokens);
 
-    const icon = document.createElement('span');
-    icon.style.cssText = `
-      background: rgba(5, 150, 105, 0.1);
-      padding: 4px 8px;
-      border-radius: 6px;
-      cursor: help;
-      user-select: none;
-      border: 1px solid rgba(5, 150, 105, 0.2);
-    `;
-    icon.textContent = `🌲 ${formatTreeCount(trees)} trees`;
-    icon.title = getDetailedTooltip(tokens, trees);
+      const icon = document.createElement('span');
+      icon.className = 'promptree-response-icon';
+      icon.style.cssText = `
+        margin-left: 8px;
+        font-size: 12px;
+        color: #059669;
+        background: rgba(5, 150, 105, 0.1);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: 500;
+        cursor: help;
+        user-select: none;
+      `;
+      icon.textContent = `🌲 ${trees.toExponential(2)}`;
+      icon.title = getDetailedTooltip(tokens, trees);
 
-    iconContainer.appendChild(icon);
-    messageElement.appendChild(iconContainer);
-  });
-}
+      // Try to find action buttons area or append to response
+      const actionArea = response.querySelector('.text-gray-400') ||
+                        response.querySelector('[class*="action"]') ||
+                        response.querySelector('[class*="button"]') ||
+                        textElement;
 
-function addUserMessageIcon() {
-  // Look for user messages that don't already have tree icons
-  const userMessages = document.querySelectorAll('[data-message-author-role="user"]');
-
-  userMessages.forEach(messageElement => {
-    if (messageElement.querySelector('.promptree-user-icon')) return;
-
-    const textContent = messageElement.textContent.trim();
-    if (!textContent) return;
-
-    const tokens = estimateTokens(textContent);
-    const trees = calculateTrees(tokens);
-
-    // Create tree icon container below the message bubble
-    const iconContainer = document.createElement('div');
-    iconContainer.className = 'promptree-user-icon';
-    iconContainer.style.cssText = `
-      margin-top: 8px;
-      text-align: right;
-      font-size: 12px;
-      color: #059669;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      font-weight: 500;
-    `;
-
-    const icon = document.createElement('span');
-    icon.style.cssText = `
-      background: rgba(5, 150, 105, 0.1);
-      padding: 4px 8px;
-      border-radius: 6px;
-      cursor: help;
-      user-select: none;
-      border: 1px solid rgba(5, 150, 105, 0.2);
-    `;
-    icon.textContent = `🌲 ${formatTreeCount(trees)} trees`;
-    icon.title = getDetailedTooltip(tokens, trees);
-
-    iconContainer.appendChild(icon);
-    messageElement.appendChild(iconContainer);
+      if (actionArea) {
+        actionArea.appendChild(icon);
+      }
+    }
   });
 }
 
@@ -357,12 +313,10 @@ setInterval(() => {
 // Set up UI update intervals
 setInterval(updateInputIcon, 500);
 setInterval(addResponseIcons, 1000);
-setInterval(addUserMessageIcon, 1000);
 
 // Also update when the page content changes
 const observer = new MutationObserver(() => {
   addResponseIcons();
-  addUserMessageIcon();
 });
 
 observer.observe(document.body, {
