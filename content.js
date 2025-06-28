@@ -273,16 +273,15 @@ function updateInputIcon() {
       display: flex;
       align-items: center;
       margin-right: 8px;
-      background: rgba(5, 150, 105, 0.1);
+      background: rgba(59, 130, 246, 0.1);
       border-radius: 6px;
       padding: 4px 8px;
       font-size: 12px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       font-weight: 500;
-      color: #059669;
-      cursor: help;
+      color: #2563eb;
       user-select: none;
-      border: 1px solid rgba(5, 150, 105, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.2);
       white-space: nowrap;
       flex-shrink: 0;
     `;
@@ -298,11 +297,10 @@ function updateInputIcon() {
 
   const inputText = inputElement.value || inputElement.textContent || '';
   const tokens = estimateTokens(inputText);
-  const trees = calculateTrees(tokens);
 
   if (tokens > 0) {
-    icon.textContent = formatTreeCount(trees);
-    icon.title = getDetailedTooltip(tokens, trees);
+    const tokenText = tokens === 1 ? '~1 token' : `~${tokens} tokens`;
+    icon.textContent = tokenText;
     icon.style.display = 'flex';
   } else {
     icon.style.display = 'none';
@@ -371,7 +369,7 @@ function addResponseIcons() {
 }
 
 function addUserMessageIcon() {
-  // Look for user messages that don't already have tree icons
+  // Look for user messages that don't already have token icons
   const userMessages = document.querySelectorAll('[data-message-author-role="user"]');
 
   userMessages.forEach(messageElement => {
@@ -379,7 +377,6 @@ function addUserMessageIcon() {
     if (!textContent) return;
 
     const tokens = estimateTokens(textContent);
-    const trees = calculateTrees(tokens);
 
     // Check if icon already exists
     let existingIcon = messageElement.querySelector('.promptree-user-icon');
@@ -388,41 +385,37 @@ function addUserMessageIcon() {
       // Update existing icon if content has changed
       const iconSpan = existingIcon.querySelector('span');
       if (iconSpan) {
-        const newDisplay = formatTreeCount(trees);
-        const newTooltip = getDetailedTooltip(tokens, trees);
+        const newDisplay = tokens === 1 ? '~1 token' : `~${tokens} tokens`;
 
         // Only update if the display has changed
         if (iconSpan.textContent !== newDisplay) {
           iconSpan.textContent = newDisplay;
-          iconSpan.title = newTooltip;
         }
       }
       return;
     }
 
-    // Create new tree icon container below the message bubble
+    // Create new token icon container below the message bubble
     const iconContainer = document.createElement('div');
     iconContainer.className = 'promptree-user-icon';
     iconContainer.style.cssText = `
       margin-top: 8px;
       text-align: right;
       font-size: 12px;
-      color: #059669;
+      color: #2563eb;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       font-weight: 500;
     `;
 
     const icon = document.createElement('span');
     icon.style.cssText = `
-      background: rgba(5, 150, 105, 0.1);
+      background: rgba(59, 130, 246, 0.1);
       padding: 4px 8px;
       border-radius: 6px;
-      cursor: help;
       user-select: none;
-      border: 1px solid rgba(5, 150, 105, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.2);
     `;
-    icon.textContent = formatTreeCount(trees);
-    icon.title = getDetailedTooltip(tokens, trees);
+    icon.textContent = tokens === 1 ? '~1 token' : `~${tokens} tokens`;
 
     iconContainer.appendChild(icon);
     messageElement.appendChild(iconContainer);
