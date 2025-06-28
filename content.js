@@ -191,7 +191,7 @@ function formatTreeCount(trees) {
       return `🌲 ${Math.round(trees)} tree${Math.round(trees) === 1 ? '' : 's'}`;
     } else {
       // Mixed trees and leaves
-      return `🌲 ${wholeTreesFloor} tree${wholeTreesFloor === 1 ? '' : 's'} 🍃 ${remainingLeaves} leaf${remainingLeaves === 1 ? '' : ''}`;
+      return `🌲 ${wholeTreesFloor} tree${wholeTreesFloor === 1 ? '' : 's'} 🍃 ${remainingLeaves} ${remainingLeaves === 1 ? 'leaf' : 'leaves'}`;
     }
   } else {
     // Less than 1 tree - convert to leaves
@@ -201,7 +201,7 @@ function formatTreeCount(trees) {
       // Too many leaves - convert back to trees for readability
       return `🌲 ${trees.toFixed(1)} tree${trees.toFixed(1) === '1.0' ? '' : 's'}`;
     } else if (totalLeaves >= 1) {
-      return `🍃 ${totalLeaves} leaf${totalLeaves === 1 ? '' : ''}`;
+      return `🍃 ${totalLeaves} ${totalLeaves === 1 ? 'leaf' : 'leaves'}`;
     } else {
       // Very small - show as fraction of a leaf
       return `🍃 <1 leaf`;
