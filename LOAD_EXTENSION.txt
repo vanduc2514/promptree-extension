@@ -1,0 +1,48 @@
+🌲 PROMPTREE EXTENSION - STEP BY STEP INSTALLATION
+=================================================
+
+✅ PREREQUISITES COMPLETED:
+- Developer mode: ENABLED
+- Extension files: ALL PRESENT
+- Directory: /Users/nvduc/projects/hobby/promptree-ext
+
+🎯 NEXT STEPS TO LOAD EXTENSION:
+
+1. 📁 Click "Load unpacked" button (should be visible now that developer mode is on)
+
+2. 📂 In the file picker dialog:
+   - Navigate to: /Users/nvduc/projects/hobby/promptree-ext
+   - Click "Select" or "Open" to choose this folder
+
+3. ✅ Extension should appear with:
+   - Name: "Promptree"
+   - Icon: Pine tree 🌲
+   - Version: 2.0
+   - Status: Enabled
+
+4. 📌 Pin to toolbar:
+   - Click the puzzle piece icon in Chrome toolbar
+   - Find "Promptree" and click the pin icon
+
+🧪 TESTING AFTER INSTALLATION:
+
+1. 🔍 Test Extension Popup:
+   - Click the Promptree icon in Chrome toolbar
+   - Should show carbon intensity data (~106 gCO2/kWh)
+
+2. 🌐 Test ChatGPT Integration:
+   - Go to https://chatgpt.com
+   - Start typing in the message box
+   - Look for 🌲 tree icons appearing
+
+🚨 TROUBLESHOOTING:
+
+If "Load unpacked" button is not visible:
+- Make sure Developer mode toggle is ON (top-right)
+- Refresh the chrome://extensions/ page
+
+If extension fails to load:
+- Check that you selected the correct folder: /Users/nvduc/projects/hobby/promptree-ext
+- Look for error messages in the extensions page
+
+Ready to proceed? Click "Load unpacked" and select the folder!

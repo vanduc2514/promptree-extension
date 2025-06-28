@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promptree</title>
+    <style>
+        body {
+            width: 320px;
+            min-height: 400px;
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 8px;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .stats {
+            margin: 20px 0;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 12px 0;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #10f54b;
+        }
+
+        .status {
+            padding: 12px;
+            border-radius: 8px;
+            margin: 16px 0;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .status.connected {
+            background: rgba(16, 245, 75, 0.2);
+            border: 1px solid rgba(16, 245, 75, 0.4);
+        }
+
+        .status.disconnected {
+            background: rgba(245, 101, 16, 0.2);
+            border: 1px solid rgba(245, 101, 16, 0.4);
+        }
+
+        .info {
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            font-size: 12px;
+            line-height: 1.4;
+            opacity: 0.8;
+        }
+
+        .info h4 {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            opacity: 1;
+        }
+
+        .button {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 12px;
+        }
+
+        .button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .loading {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🌲</div>
+            <div class="title">Promptree</div>
+            <div class="subtitle">Environmental Impact Tracker</div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-label">Carbon Intensity</span>
+                <span class="stat-value" id="carbon-intensity">
+                    <span class="loading">⟳</span> Loading...
+                </span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Data Source</span>
+                <span class="stat-value" id="data-source">UK Grid</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Last Updated</span>
+                <span class="stat-value" id="last-updated">Just now</span>
+            </div>
+        </div>
+
+        <div class="status connected" id="connection-status">
+            ✅ Connected to carbon intensity API
+        </div>
+
+        <button class="button" id="refresh-btn">
+            <span id="refresh-text">🔄 Refresh Data</span>
+        </button>
+
+        <div class="info">
+            <h4>How It Works</h4>
+            <p>Promptree estimates the carbon footprint of your ChatGPT conversations by:</p>
+            <ul style="margin: 8px 0; padding-left: 16px;">
+                <li>Calculating energy consumption per token</li>
+                <li>Using real-time grid carbon intensity</li>
+                <li>Converting to "trees needed" metric</li>
+            </ul>
+            <p>🇬🇧 Currently using UK National Grid data (free API) with global fallbacks.</p>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

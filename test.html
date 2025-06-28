@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promptree Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .message {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #059669;
+        }
+
+        .group.w-full {
+            background: #f0f9ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #0ea5e9;
+        }
+
+        .prose {
+            line-height: 1.6;
+            color: #374151;
+        }
+
+        .text-gray-400 {
+            color: #9ca3af;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🌲 Promptree Extension Test Page</h1>
+        <p>This page simulates ChatGPT's interface to test the Promptree extension functionality.</p>
+
+        <h3>Test Input Field:</h3>
+        <div style="position: relative;">
+            <textarea data-id="root" placeholder="Type your message here and watch for the 🌲 indicator...">Tell me about renewable energy and how it helps reduce carbon emissions from electricity generation.</textarea>
+        </div>
+
+        <h3>Simulated ChatGPT Responses:</h3>
+
+        <div class="group w-full">
+            <div class="prose">
+                <p>Renewable energy sources like solar, wind, and hydroelectric power are crucial for reducing carbon emissions from electricity generation. These technologies produce electricity without burning fossil fuels, which significantly lowers the carbon intensity of the electrical grid.</p>
+
+                <p>When the grid has a higher percentage of renewable energy, each unit of electricity consumed has a lower carbon footprint. This is why timing energy consumption during periods of high renewable generation can make a meaningful environmental impact.</p>
+            </div>
+            <div class="text-gray-400">
+                Response actions will appear here
+            </div>
+        </div>
+
+        <div class="group w-full">
+            <div class="prose">
+                <p>The carbon intensity of electricity varies throughout the day based on the energy mix. During sunny and windy periods, renewable sources generate more power, reducing overall grid emissions. Smart scheduling of energy-intensive tasks during these times can amplify the environmental benefits.</p>
+
+                <p>AI systems like ChatGPT also consume electricity for processing. By understanding the real-time carbon intensity of the grid, we can make more informed decisions about when and how we use these technologies to minimize our environmental impact.</p>
+            </div>
+            <div class="text-gray-400">
+                Response actions will appear here
+            </div>
+        </div>
+
+        <div style="margin-top: 30px; padding: 20px; background: #fef3c7; border-radius: 8px; border: 1px solid #f59e0b;">
+            <h4>🧪 Testing Instructions:</h4>
+            <ol>
+                <li>Make sure the Promptree extension is loaded in Chrome</li>
+                <li>Type in the textarea above - you should see a 🌲 indicator appear</li>
+                <li>The responses above should show 🌲 icons with environmental impact estimates</li>
+                <li>Click the Promptree extension icon to see current carbon intensity data</li>
+                <li>Check browser console for any error messages</li>
+            </ol>
+        </div>
+
+        <div style="margin-top: 20px; padding: 15px; background: #dcfce7; border-radius: 8px; border: 1px solid #16a34a;">
+            <p><strong>Expected Behavior:</strong></p>
+            <ul>
+                <li>🌲 icon appears in textarea when typing</li>
+                <li>🌲 icons with exponential notation (e.g., "🌲 4.2e-5") appear next to responses</li>
+                <li>Hovering over icons shows detailed calculation breakdown</li>
+                <li>Extension popup shows current carbon intensity data</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Add some debugging
+        console.log('Promptree test page loaded');
+        console.log('Looking for Promptree extension...');
+
+        // Check if extension is working after a delay
+        setTimeout(() => {
+            const icons = document.querySelectorAll('#promptree-input-icon, .promptree-response-icon');
+            if (icons.length > 0) {
+                console.log('✅ Promptree extension is working! Found', icons.length, 'icons');
+            } else {
+                console.log('❌ Promptree extension not detected. Make sure it\'s loaded and enabled.');
+            }
+        }, 2000);
+    </script>
+</body>
+</html>

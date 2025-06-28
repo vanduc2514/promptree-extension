@@ -1,0 +1,12 @@
+{
+  "name": "promptree-icon-converter",
+  "version": "1.0.0",
+  "description": "Convert SVG icons to PNG for Chrome extension",
+  "scripts": {
+    "convert-icons": "node convert-icons.js",
+    "test-extension": "node test-extension.js"
+  },
+  "dependencies": {
+    "puppeteer": "^21.0.0"
+  }
+}

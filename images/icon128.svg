@@ -1,0 +1,26 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="128" height="128" rx="20" fill="url(#gradient)"/>
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10B981"/>
+      <stop offset="100%" style="stop-color:#059669"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Simple emoji-style pine tree made with SVG -->
+  <!-- Tree layers (pine tree style) -->
+  <polygon points="64,25 52,45 76,45" fill="#228B22"/>
+  <polygon points="64,35 50,50 78,50" fill="#228B22"/>
+  <polygon points="64,45 48,60 80,60" fill="#228B22"/>
+
+  <!-- Tree trunk -->
+  <rect x="60" y="60" width="8" height="15" fill="#8B4513"/>
+
+  <!-- Add some simple shading for emoji-like appearance -->
+  <polygon points="64,25 52,45 64,40" fill="#32CD32" opacity="0.8"/>
+  <polygon points="64,35 50,50 64,45" fill="#32CD32" opacity="0.8"/>
+  <polygon points="64,45 48,60 64,55" fill="#32CD32" opacity="0.8"/>
+
+  <!-- Promptree text with spaced arrow -->
+  <text x="64" y="110" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="12" font-weight="bold" opacity="0.9">PROMPTREE  ></text>
+</svg>
