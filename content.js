@@ -172,19 +172,40 @@ function calculateTrees(tokenCount) {
 }
 
 /**
- * Formats tree count for display with K notation for thousands
+ * Formats tree count for display using leaves/trees with intuitive rounding
  */
 function formatTreeCount(trees) {
+  const LEAVES_PER_TREE = 250000; // Conservative estimate of leaves per mature tree
+
   if (trees >= 1000) {
-    return `${(trees / 1000).toFixed(1)}K`;
+    // Very large numbers - use K notation for trees
+    return `🌲 ${(trees / 1000).toFixed(1)}K trees`;
   } else if (trees >= 1) {
-    return trees.toFixed(1);
-  } else if (trees >= 0.1) {
-    return trees.toFixed(2);
-  } else if (trees >= 0.01) {
-    return trees.toFixed(3);
+    // 1 or more trees
+    const wholeTreesFloor = Math.floor(trees);
+    const remainingFraction = trees - wholeTreesFloor;
+    const remainingLeaves = Math.floor(remainingFraction * LEAVES_PER_TREE);
+
+    if (remainingLeaves === 0 || trees >= 0.95) {
+      // Nearly a whole number of trees or no significant leaves
+      return `🌲 ${Math.round(trees)} tree${Math.round(trees) === 1 ? '' : 's'}`;
+    } else {
+      // Mixed trees and leaves
+      return `🌲 ${wholeTreesFloor} tree${wholeTreesFloor === 1 ? '' : 's'} 🍃 ${remainingLeaves} leaf${remainingLeaves === 1 ? '' : ''}`;
+    }
   } else {
-    return trees.toExponential(1);
+    // Less than 1 tree - convert to leaves
+    const totalLeaves = Math.floor(trees * LEAVES_PER_TREE);
+
+    if (totalLeaves >= 1000) {
+      // Too many leaves - convert back to trees for readability
+      return `🌲 ${trees.toFixed(1)} tree${trees.toFixed(1) === '1.0' ? '' : 's'}`;
+    } else if (totalLeaves >= 1) {
+      return `🍃 ${totalLeaves} leaf${totalLeaves === 1 ? '' : ''}`;
+    } else {
+      // Very small - show as fraction of a leaf
+      return `🍃 <1 leaf`;
+    }
   }
 }
 
@@ -200,7 +221,10 @@ function getDetailedTooltip(tokens, trees) {
 ~${kwh} kWh energy
 ~${gco2} g CO2 emissions
 @ ${currentCarbonIntensity} gCO2/kWh
-≈ ${formatTreeCount(trees)} trees needed`;
+≈ ${formatTreeCount(trees)}
+
+🌲 1 tree absorbs 22kg CO2/year
+🍃 1 tree ≈ 250,000 leaves worth of absorption`;
 }
 
 function updateInputIcon() {
@@ -246,7 +270,7 @@ function updateInputIcon() {
   const trees = calculateTrees(tokens);
 
   if (tokens > 0) {
-    icon.textContent = `🌲 ${formatTreeCount(trees)} trees`;
+    icon.textContent = formatTreeCount(trees);
     icon.title = getDetailedTooltip(tokens, trees);
     icon.style.display = 'block';
   } else {
@@ -259,15 +283,32 @@ function addResponseIcons() {
   const assistantMessages = document.querySelectorAll('[data-message-author-role="assistant"]');
 
   assistantMessages.forEach(messageElement => {
-    if (messageElement.querySelector('.promptree-assistant-icon')) return;
-
     const textContent = messageElement.textContent.trim();
     if (!textContent) return;
 
     const tokens = estimateTokens(textContent);
     const trees = calculateTrees(tokens);
 
-    // Create tree icon container at the end of the response in a separate section
+    // Check if icon already exists
+    let existingIcon = messageElement.querySelector('.promptree-assistant-icon');
+
+    if (existingIcon) {
+      // Update existing icon if content has changed
+      const iconSpan = existingIcon.querySelector('span');
+      if (iconSpan) {
+        const newDisplay = formatTreeCount(trees);
+        const newTooltip = getDetailedTooltip(tokens, trees);
+
+        // Only update if the display has changed (response is still growing)
+        if (iconSpan.textContent !== newDisplay) {
+          iconSpan.textContent = newDisplay;
+          iconSpan.title = newTooltip;
+        }
+      }
+      return;
+    }
+
+    // Create new icon container at the end of the response in a separate section
     const iconContainer = document.createElement('div');
     iconContainer.className = 'promptree-assistant-icon';
     iconContainer.style.cssText = `
@@ -290,7 +331,7 @@ function addResponseIcons() {
       user-select: none;
       border: 1px solid rgba(5, 150, 105, 0.2);
     `;
-    icon.textContent = `🌲 ${formatTreeCount(trees)} trees`;
+    icon.textContent = formatTreeCount(trees);
     icon.title = getDetailedTooltip(tokens, trees);
 
     iconContainer.appendChild(icon);
@@ -303,15 +344,32 @@ function addUserMessageIcon() {
   const userMessages = document.querySelectorAll('[data-message-author-role="user"]');
 
   userMessages.forEach(messageElement => {
-    if (messageElement.querySelector('.promptree-user-icon')) return;
-
     const textContent = messageElement.textContent.trim();
     if (!textContent) return;
 
     const tokens = estimateTokens(textContent);
     const trees = calculateTrees(tokens);
 
-    // Create tree icon container below the message bubble
+    // Check if icon already exists
+    let existingIcon = messageElement.querySelector('.promptree-user-icon');
+
+    if (existingIcon) {
+      // Update existing icon if content has changed
+      const iconSpan = existingIcon.querySelector('span');
+      if (iconSpan) {
+        const newDisplay = formatTreeCount(trees);
+        const newTooltip = getDetailedTooltip(tokens, trees);
+
+        // Only update if the display has changed
+        if (iconSpan.textContent !== newDisplay) {
+          iconSpan.textContent = newDisplay;
+          iconSpan.title = newTooltip;
+        }
+      }
+      return;
+    }
+
+    // Create new tree icon container below the message bubble
     const iconContainer = document.createElement('div');
     iconContainer.className = 'promptree-user-icon';
     iconContainer.style.cssText = `
@@ -332,7 +390,7 @@ function addUserMessageIcon() {
       user-select: none;
       border: 1px solid rgba(5, 150, 105, 0.2);
     `;
-    icon.textContent = `🌲 ${formatTreeCount(trees)} trees`;
+    icon.textContent = formatTreeCount(trees);
     icon.title = getDetailedTooltip(tokens, trees);
 
     iconContainer.appendChild(icon);
@@ -356,7 +414,7 @@ setInterval(() => {
 
 // Set up UI update intervals
 setInterval(updateInputIcon, 500);
-setInterval(addResponseIcons, 1000);
+setInterval(addResponseIcons, 500); // Faster updates for streaming responses
 setInterval(addUserMessageIcon, 1000);
 
 // Also update when the page content changes
