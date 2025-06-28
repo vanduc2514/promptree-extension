@@ -235,34 +235,65 @@ function updateInputIcon() {
 
   if (!inputElement) return;
 
-  // Find or create container for the icon
-  let container = inputElement.closest('.relative') || inputElement.parentElement;
+  // Look for the send button - try multiple selectors for different UI layouts
+  const sendButton = document.querySelector('button[data-testid="send-button"]') ||
+                    document.querySelector('button[aria-label*="Send"]') ||
+                    document.querySelector('button[aria-label*="submit"]') ||
+                    document.querySelector('button:has(svg)') ||
+                    document.querySelector('[data-testid="fruitjuice-send-button"]') ||
+                    inputElement.parentElement?.querySelector('button') ||
+                    inputElement.closest('form')?.querySelector('button[type="submit"]') ||
+                    inputElement.closest('div')?.querySelector('button');
+
+  if (!sendButton) return;
+
+  // Find the parent container that holds both input and send button
+  let container = sendButton.parentElement;
+
+  // If the send button is in a separate container, look for a common parent
+  if (!container || !container.contains(inputElement)) {
+    container = inputElement.closest('div')?.parentElement?.querySelector('div:has(button)') ||
+                sendButton.closest('div')?.parentElement;
+  }
+
   if (!container) return;
 
-  let icon = container.querySelector('#promptree-input-icon');
+  let icon = document.querySelector('#promptree-input-icon'); // Global search to avoid duplicates
+
+  // Remove existing icon if it's in the wrong place
+  if (icon && !container.contains(icon)) {
+    icon.remove();
+    icon = null;
+  }
+
   if (!icon) {
     icon = document.createElement('div');
     icon.id = 'promptree-input-icon';
     icon.style.cssText = `
-      position: absolute;
-      right: 12px;
-      top: 12px;
-      z-index: 1000;
-      background: rgba(0, 0, 0, 0.05);
-      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      margin-right: 8px;
+      background: rgba(5, 150, 105, 0.1);
+      border-radius: 6px;
       padding: 4px 8px;
-      font-size: 14px;
+      font-size: 12px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       font-weight: 500;
       color: #059669;
       cursor: help;
       user-select: none;
-      pointer-events: auto;
       border: 1px solid rgba(5, 150, 105, 0.2);
-      backdrop-filter: blur(4px);
+      white-space: nowrap;
+      flex-shrink: 0;
     `;
-    container.style.position = 'relative';
-    container.appendChild(icon);
+
+    // Try to insert the icon right before the send button
+    try {
+      sendButton.parentElement.insertBefore(icon, sendButton);
+    } catch (e) {
+      // Fallback: append to the container
+      container.appendChild(icon);
+    }
   }
 
   const inputText = inputElement.value || inputElement.textContent || '';
@@ -272,7 +303,7 @@ function updateInputIcon() {
   if (tokens > 0) {
     icon.textContent = formatTreeCount(trees);
     icon.title = getDetailedTooltip(tokens, trees);
-    icon.style.display = 'block';
+    icon.style.display = 'flex';
   } else {
     icon.style.display = 'none';
   }
