@@ -108,6 +108,36 @@ GET https://api.carbonintensity.org.uk/intensity
 - **Manual refresh**: Available via popup interface
 - **Offline resilience**: Uses last known data when APIs unavailable
 
+## 📁 Project Structure
+
+```
+promptree-ext/
+├── manifest.json          # Chrome extension manifest
+├── background.js           # Extension background script
+├── content.js              # Main extension content script
+├── popup.html             # Extension popup interface
+├── popup.js               # Popup functionality
+├── images/                # Extension icons (16px, 48px, 128px)
+├── package.json           # Node.js dependencies
+├── README.md              # This file
+└── prompt/                # Development & documentation files
+    ├── README.md          # Development files documentation
+    ├── setup.sh           # Project setup script
+    ├── install.sh         # Extension installation helper
+    ├── TESTING_GUIDE.md   # Testing instructions
+    └── test-*.js/html     # Test files and validation scripts
+```
+
+### Core Extension Files
+The root directory contains only the essential files needed for the Chrome extension to function:
+- Extension manifest and scripts
+- UI components (popup)
+- Icon assets
+- Project configuration
+
+### Development Files
+The `prompt/` folder contains all development, testing, and documentation files that support the extension but aren't part of the core functionality.
+
 ## 📝 License
 
 This project is licensed under the MIT License - see below for details.
