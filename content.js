@@ -27,6 +27,10 @@ let currentCarbonIntensity = FALLBACK_CARBON_INTENSITY; // Default to fallback
 let lastApiUpdate = 0;
 const API_CACHE_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
 
+// --- TOKEN SYNCHRONIZATION ---
+let currentInputTokens = 0; // Current input token count
+let lastSentTokens = 0; // Token count of the last sent message
+
 // ==============================================================================
 //  API & DATA FETCHING LOGIC (MULTIPLE SOURCES)
 // ==============================================================================
@@ -293,10 +297,16 @@ function updateInputIcon() {
       // Fallback: append to the container
       container.appendChild(icon);
     }
+  }  const inputText = inputElement.value || inputElement.textContent || '';
+  const tokens = estimateTokens(inputText);
+
+  // Detect when message is sent (input becomes empty after having content)
+  if (currentInputTokens > 0 && tokens === 0) {
+    // Message was just sent, store the token count
+    lastSentTokens = currentInputTokens;
   }
 
-  const inputText = inputElement.value || inputElement.textContent || '';
-  const tokens = estimateTokens(inputText);
+  currentInputTokens = tokens;
 
   if (tokens > 0) {
     const tokenText = tokens === 1 ? '~1 token' : `~${tokens} tokens`;
@@ -372,11 +382,14 @@ function addUserMessageIcon() {
   // Look for user messages that don't already have token icons
   const userMessages = document.querySelectorAll('[data-message-author-role="user"]');
 
-  userMessages.forEach(messageElement => {
+  userMessages.forEach((messageElement, index) => {
     const textContent = messageElement.textContent.trim();
     if (!textContent) return;
 
-    const tokens = estimateTokens(textContent);
+    // For the most recent message, use the stored token count from when it was sent
+    // For older messages, calculate normally
+    const isLatestMessage = index === userMessages.length - 1;
+    const tokens = isLatestMessage && lastSentTokens > 0 ? lastSentTokens : estimateTokens(textContent);
 
     // Check if icon already exists
     let existingIcon = messageElement.querySelector('.promptree-user-icon');
