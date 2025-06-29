@@ -1,5 +1,5 @@
 // ==============================================================================
-//  PROMPTREE: DYNAMIC CARBON INTENSITY & API INTEGRATION (JUNE 2025)
+//  PROMPTREE: CARBON INTENSITY ESTIMATION EXTENSION (JUNE 2025)
 // ==============================================================================
 
 // ==============================================================================
@@ -23,15 +23,11 @@ const CHARS_PER_TOKEN = 4;
 // SOURCE: Global average carbon intensity (updated 2025).
 const FALLBACK_CARBON_INTENSITY = 475;
 
-// API Configuration
-const API_CACHE_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
-
 // Display Configuration
 const LEAVES_PER_TREE = 250000; // Conservative estimate of leaves per mature tree
 
 // State Variables
-let currentCarbonIntensity = FALLBACK_CARBON_INTENSITY; // Default to fallback
-let lastApiUpdate = 0;
+let currentCarbonIntensity = FALLBACK_CARBON_INTENSITY; // Using static fallback value
 let currentInputTokens = 0; // Current input token count
 let lastSentTokens = 0; // Token count of the last sent message
 
@@ -39,130 +35,21 @@ let lastSentTokens = 0; // Token count of the last sent message
 //  API - Carbon Intensity Data Fetching
 // ==============================================================================
 
-/**
- * Fetches carbon intensity from UK Carbon Intensity API (free, no key required)
- * Covers Great Britain (England, Scotland, Wales)
- */
-async function fetchUKCarbonIntensity() {
-  try {
-    const response = await fetch('https://api.carbonintensity.org.uk/intensity', {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json'
-      }
-    });
-
-    if (!response.ok) {
-      console.warn('Promptree: UK Carbon Intensity API request failed:', response.statusText);
-      return null;
-    }
-
-    const data = await response.json();
-    if (data.data && data.data.length > 0 && data.data[0].intensity) {
-      const intensity = data.data[0].intensity.actual || data.data[0].intensity.forecast;
-      if (intensity) {
-        console.log(`Promptree: UK Carbon intensity updated to ${intensity} gCO2/kWh.`);
-        return intensity;
-      }
-    }
-  } catch (error) {
-    console.warn('Promptree: Error calling UK Carbon Intensity API:', error);
-  }
-  return null;
-}
+// TODO: Implement API integration for dynamic carbon intensity fetching
+// Planned APIs: Electricity Maps, WattTime, or regional carbon intensity services
+// For now, using static fallback value defined in CONFIG section
 
 /**
- * Fetches carbon intensity from Electricity Maps (requires API key for production)
- * This is a fallback option - users would need to provide their own API key
- */
-async function fetchElectricityMapsIntensity(coords) {
-  // Note: This would require an API key. For demo purposes, we'll skip this
-  // Users can sign up at https://api-portal.electricitymaps.com/ for free tier
-  console.log('Promptree: Electricity Maps API would require API key configuration.');
-  return null;
-}
-
-/**
- * Gets user location and attempts to fetch relevant carbon intensity data
- */
-function getUserLocationAndFetchData() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const coords = position.coords;
-        console.log(`Promptree: User location: ${coords.latitude}, ${coords.longitude}`);
-
-        // For UK coordinates, use UK API
-        if (isUKLocation(coords.latitude, coords.longitude)) {
-          fetchUKCarbonIntensity().then(intensity => {
-            if (intensity) {
-              currentCarbonIntensity = intensity;
-              updateLastApiUpdate();
-            }
-          });
-        } else {
-          // For other locations, could implement other regional APIs
-          console.log('Promptree: Location outside UK - using global average.');
-        }
-      },
-      (error) => {
-        console.warn('Promptree: Geolocation permission denied or failed:', error.message);
-        // Try UK API anyway as a reasonable default for many users
-        fetchUKCarbonIntensity().then(intensity => {
-          if (intensity) {
-            currentCarbonIntensity = intensity;
-            updateLastApiUpdate();
-          }
-        });
-      }
-    );
-  } else {
-    console.warn('Promptree: Geolocation not supported.');
-    // Try UK API as fallback
-    fetchUKCarbonIntensity().then(intensity => {
-      if (intensity) {
-        currentCarbonIntensity = intensity;
-        updateLastApiUpdate();
-      }
-    });
-  }
-}
-
-/**
- * Main function to initialize carbon data fetching
+ * Initialize carbon intensity data (currently using static fallback)
  */
 function initializeCarbonData() {
-  // Only fetch if we don't have recent data
-  if (shouldRefreshCarbonData()) {
-    getUserLocationAndFetchData();
-  }
+  // TODO: Replace with actual API calls when implemented
+  console.log(`Promptree: Current carbon intensity: ${currentCarbonIntensity} gCO2/kWh`);
 }
 
 // ==============================================================================
 //  UTILS - Helper Functions
 // ==============================================================================
-
-/**
- * Simple check if coordinates are within UK bounds
- */
-function isUKLocation(lat, lng) {
-  // Approximate UK bounding box
-  return lat >= 49.5 && lat <= 61.0 && lng >= -8.5 && lng <= 2.0;
-}
-
-/**
- * Updates the last API update timestamp
- */
-function updateLastApiUpdate() {
-  lastApiUpdate = Date.now();
-}
-
-/**
- * Checks if we need to refresh carbon intensity data
- */
-function shouldRefreshCarbonData() {
-  return (Date.now() - lastApiUpdate) > API_CACHE_DURATION;
-}
 
 /**
  * Estimates token count from text length
@@ -463,20 +350,12 @@ function addUserMessageIcon() {
  * Initialize the extension
  */
 function initializeExtension() {
-  // Initialize carbon data when script loads
   initializeCarbonData();
 
   // Set up UI update intervals
   setInterval(updateInputIcon, 500);
   setInterval(addResponseIcons, 500); // Faster updates for streaming responses
   setInterval(addUserMessageIcon, 1000);
-
-  // Refresh carbon data periodically
-  setInterval(() => {
-    if (shouldRefreshCarbonData()) {
-      initializeCarbonData();
-    }
-  }, 10 * 60 * 1000); // Check every 10 minutes
 
   // Also update when the page content changes
   const observer = new MutationObserver(() => {
