@@ -222,6 +222,9 @@ function updateInputIcon() {
  * Adds tree count icons to AI assistant response messages
  */
 function addResponseIcons() {
+  // Calculate total accumulated trees from AI assistant responses only
+  let totalAccumulated = 0;
+
   // Look for AI assistant messages
   const assistantMessages = document.querySelectorAll('[data-message-author-role="assistant"]');
 
@@ -232,20 +235,30 @@ function addResponseIcons() {
     const tokens = estimateTokens(textContent);
     const trees = calculateTrees(tokens);
 
+    // Add this response to total (only AI responses, not user inputs)
+    totalAccumulated += trees;
+
     // Check if icon already exists
     let existingIcon = messageElement.querySelector('.promptree-assistant-icon');
 
     if (existingIcon) {
       // Update existing icon if content has changed
-      const iconSpan = existingIcon.querySelector('span');
-      if (iconSpan) {
-        const newDisplay = formatTreeCount(trees);
+      const treeIconSpan = existingIcon.querySelector('.tree-icon');
+      const accumulatedIconSpan = existingIcon.querySelector('.accumulated-icon');
+
+      if (treeIconSpan && accumulatedIconSpan) {
+        const newTreeDisplay = formatTreeCount(trees);
         const newTooltip = getDetailedTooltip(tokens, trees);
 
         // Only update if the display has changed (response is still growing)
-        if (iconSpan.textContent !== newDisplay) {
-          iconSpan.textContent = newDisplay;
-          iconSpan.title = newTooltip;
+        if (treeIconSpan.textContent !== newTreeDisplay) {
+          treeIconSpan.textContent = newTreeDisplay;
+          treeIconSpan.title = newTooltip;
+          treeIconSpan.dataset.previousText = textContent;
+
+          // Update accumulated trees display with recalculated total
+          accumulatedIconSpan.textContent = `Total: ${formatTreeCount(totalAccumulated)}`;
+          console.log(`Promptree: Updated response - current: ${trees.toFixed(6)}, total AI responses: ${totalAccumulated.toFixed(6)}`);
         }
       }
       return;
@@ -260,25 +273,47 @@ function addResponseIcons() {
       border-top: 1px solid rgba(0, 0, 0, 0.1);
       text-align: left;
       font-size: 12px;
-      color: #059669;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       font-weight: 500;
+      display: flex;
+      gap: 8px;
+      align-items: center;
     `;
 
-    const icon = document.createElement('span');
-    icon.style.cssText = `
+    // Current response tree count icon
+    const treeIcon = document.createElement('span');
+    treeIcon.className = 'tree-icon';
+    treeIcon.style.cssText = `
       background: rgba(5, 150, 105, 0.1);
       padding: 4px 8px;
       border-radius: 6px;
       cursor: help;
       user-select: none;
       border: 1px solid rgba(5, 150, 105, 0.2);
+      color: #059669;
     `;
-    icon.textContent = formatTreeCount(trees);
-    icon.title = getDetailedTooltip(tokens, trees);
+    treeIcon.textContent = formatTreeCount(trees);
+    treeIcon.title = getDetailedTooltip(tokens, trees);
+    treeIcon.dataset.previousText = textContent;
 
-    iconContainer.appendChild(icon);
+    // Accumulated trees icon with teal color scheme and "Total:" prefix
+    const accumulatedIcon = document.createElement('span');
+    accumulatedIcon.className = 'accumulated-icon';
+    accumulatedIcon.style.cssText = `
+      background: rgba(8, 145, 178, 0.1);
+      padding: 4px 8px;
+      border-radius: 6px;
+      user-select: none;
+      border: 1px solid rgba(8, 145, 178, 0.2);
+      color: #0891b2;
+    `;
+    accumulatedIcon.textContent = `Total: ${formatTreeCount(totalAccumulated)}`;
+
+    iconContainer.appendChild(treeIcon);
+    iconContainer.appendChild(accumulatedIcon);
     messageElement.appendChild(iconContainer);
+
+    console.log(`Promptree: New response - current: ${trees.toFixed(6)}, total AI responses: ${totalAccumulated.toFixed(6)}`);
   });
 }
 
