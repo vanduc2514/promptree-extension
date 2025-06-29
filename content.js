@@ -2,7 +2,9 @@
 //  PROMPTREE: DYNAMIC CARBON INTENSITY & API INTEGRATION (JUNE 2025)
 // ==============================================================================
 
-// --- STATIC CONSTANTS (RESEARCH-BASED) ---
+// ==============================================================================
+//  CONFIG - Constants and Configuration
+// ==============================================================================
 
 // CONSTANT 1: ENERGY CONSUMPTION PER TOKEN (kWh/token)
 // SOURCE: Based on analyses of modern GPU (e.g., NVIDIA H100) power draw.
@@ -21,18 +23,20 @@ const CHARS_PER_TOKEN = 4;
 // SOURCE: Global average carbon intensity (updated 2025).
 const FALLBACK_CARBON_INTENSITY = 475;
 
-// --- DYNAMIC DATA & API CONFIGURATION ---
-
-let currentCarbonIntensity = FALLBACK_CARBON_INTENSITY; // Default to fallback
-let lastApiUpdate = 0;
+// API Configuration
 const API_CACHE_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
 
-// --- TOKEN SYNCHRONIZATION ---
+// Display Configuration
+const LEAVES_PER_TREE = 250000; // Conservative estimate of leaves per mature tree
+
+// State Variables
+let currentCarbonIntensity = FALLBACK_CARBON_INTENSITY; // Default to fallback
+let lastApiUpdate = 0;
 let currentInputTokens = 0; // Current input token count
 let lastSentTokens = 0; // Token count of the last sent message
 
 // ==============================================================================
-//  API & DATA FETCHING LOGIC (MULTIPLE SOURCES)
+//  API - Carbon Intensity Data Fetching
 // ==============================================================================
 
 /**
@@ -125,6 +129,20 @@ function getUserLocationAndFetchData() {
 }
 
 /**
+ * Main function to initialize carbon data fetching
+ */
+function initializeCarbonData() {
+  // Only fetch if we don't have recent data
+  if (shouldRefreshCarbonData()) {
+    getUserLocationAndFetchData();
+  }
+}
+
+// ==============================================================================
+//  UTILS - Helper Functions
+// ==============================================================================
+
+/**
  * Simple check if coordinates are within UK bounds
  */
 function isUKLocation(lat, lng) {
@@ -147,19 +165,8 @@ function shouldRefreshCarbonData() {
 }
 
 /**
- * Main function to initialize carbon data fetching
+ * Estimates token count from text length
  */
-function initializeCarbonData() {
-  // Only fetch if we don't have recent data
-  if (shouldRefreshCarbonData()) {
-    getUserLocationAndFetchData();
-  }
-}
-
-// ==============================================================================
-//  CORE CALCULATION & UI FUNCTIONS
-// ==============================================================================
-
 function estimateTokens(text) {
   return Math.ceil(text.length / CHARS_PER_TOKEN);
 }
@@ -179,8 +186,6 @@ function calculateTrees(tokenCount) {
  * Formats tree count for display using leaves/trees with intuitive rounding
  */
 function formatTreeCount(trees) {
-  const LEAVES_PER_TREE = 250000; // Conservative estimate of leaves per mature tree
-
   if (trees >= 1000) {
     // Very large numbers - use K notation for trees
     return `🌲 ${(trees / 1000).toFixed(1)}K trees`;
@@ -231,6 +236,13 @@ function getDetailedTooltip(tokens, trees) {
 🍃 1 tree ≈ 250,000 leaves worth of absorption`;
 }
 
+// ==============================================================================
+//  UI - User Interface Functions
+// ==============================================================================
+
+/**
+ * Updates the input token counter icon
+ */
 function updateInputIcon() {
   const inputElement = document.querySelector('textarea[data-id="root"]') ||
                       document.querySelector('div[contenteditable="true"]') ||
@@ -297,7 +309,9 @@ function updateInputIcon() {
       // Fallback: append to the container
       container.appendChild(icon);
     }
-  }  const inputText = inputElement.value || inputElement.textContent || '';
+  }
+
+  const inputText = inputElement.value || inputElement.textContent || '';
   const tokens = estimateTokens(inputText);
 
   // Detect when message is sent (input becomes empty after having content)
@@ -317,6 +331,9 @@ function updateInputIcon() {
   }
 }
 
+/**
+ * Adds tree count icons to AI assistant response messages
+ */
 function addResponseIcons() {
   // Look for AI assistant messages
   const assistantMessages = document.querySelectorAll('[data-message-author-role="assistant"]');
@@ -378,6 +395,9 @@ function addResponseIcons() {
   });
 }
 
+/**
+ * Adds token count icons to user messages
+ */
 function addUserMessageIcon() {
   // Look for user messages that don't already have token icons
   const userMessages = document.querySelectorAll('[data-message-author-role="user"]');
@@ -436,34 +456,42 @@ function addUserMessageIcon() {
 }
 
 // ==============================================================================
-//  INITIALIZATION & MONITORING
+//  MAIN - Initialization and Event Handling
 // ==============================================================================
 
-// Initialize carbon data when script loads
-initializeCarbonData();
+/**
+ * Initialize the extension
+ */
+function initializeExtension() {
+  // Initialize carbon data when script loads
+  initializeCarbonData();
 
-// Refresh carbon data periodically
-setInterval(() => {
-  if (shouldRefreshCarbonData()) {
-    initializeCarbonData();
-  }
-}, 10 * 60 * 1000); // Check every 10 minutes
+  // Set up UI update intervals
+  setInterval(updateInputIcon, 500);
+  setInterval(addResponseIcons, 500); // Faster updates for streaming responses
+  setInterval(addUserMessageIcon, 1000);
 
-// Set up UI update intervals
-setInterval(updateInputIcon, 500);
-setInterval(addResponseIcons, 500); // Faster updates for streaming responses
-setInterval(addUserMessageIcon, 1000);
+  // Refresh carbon data periodically
+  setInterval(() => {
+    if (shouldRefreshCarbonData()) {
+      initializeCarbonData();
+    }
+  }, 10 * 60 * 1000); // Check every 10 minutes
 
-// Also update when the page content changes
-const observer = new MutationObserver(() => {
-  addResponseIcons();
-  addUserMessageIcon();
-});
+  // Also update when the page content changes
+  const observer = new MutationObserver(() => {
+    addResponseIcons();
+    addUserMessageIcon();
+  });
 
-observer.observe(document.body, {
-  childList: true,
-  subtree: true
-});
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
 
-console.log('Promptree: Extension loaded successfully! 🌲');
-console.log(`Promptree: Using carbon intensity: ${currentCarbonIntensity} gCO2/kWh`);
+  console.log('Promptree: Extension loaded successfully! 🌲');
+  console.log(`Promptree: Using carbon intensity: ${currentCarbonIntensity} gCO2/kWh`);
+}
+
+// Start the extension
+initializeExtension();
