@@ -48,44 +48,44 @@
             margin: 20px 0;
         }
 
+        .data-source-section, .calculation-section {
+            margin-bottom: 20px;
+        }
+
         .stat-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin: 12px 0;
-            padding: 12px;
+            margin: 8px 0;
+            padding: 10px 12px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 8px;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .stat-label {
-            font-size: 14px;
+            font-size: 13px;
             opacity: 0.9;
         }
 
         .stat-value {
-            font-size: 16px;
-            font-weight: 600;
-            color: #10f54b;
-        }
-
-        .status {
-            padding: 12px;
-            border-radius: 8px;
-            margin: 16px 0;
-            text-align: center;
             font-size: 14px;
+            font-weight: 600;
+            color: #e0e7ff;
         }
 
-        .status.connected {
-            background: rgba(16, 245, 75, 0.2);
-            border: 1px solid rgba(16, 245, 75, 0.4);
+        .stat-info-link {
+            margin-left: 6px;
+            font-size: 12px;
+            opacity: 0.7;
+            text-decoration: none;
+            color: rgba(255, 255, 255, 0.8);
+            transition: opacity 0.2s ease;
         }
 
-        .status.disconnected {
-            background: rgba(245, 101, 16, 0.2);
-            border: 1px solid rgba(245, 101, 16, 0.4);
+        .stat-info-link:hover {
+            opacity: 1;
+            color: #e0e7ff;
         }
 
         .info {
@@ -138,46 +138,79 @@
         <div class="header">
             <div class="logo">🌲</div>
             <div class="title">Promptree</div>
-            <div class="subtitle">Environmental Impact Tracker</div>
+            <div class="subtitle">Impact of your prompt</div>
         </div>
 
         <div class="stats">
-            <div class="stat-item">
-                <span class="stat-label">Carbon Intensity</span>
-                <span class="stat-value" id="carbon-intensity">
-                    <span class="loading">⟳</span> Loading...
-                </span>
+            <div class="data-source-section">
+                <h3 style="margin: 20px 0 12px 0; font-size: 16px; font-weight: 600;">Carbon Intensity Data</h3>
+                <div class="stat-item">
+                    <span class="stat-label">Intensity</span>
+                    <span class="stat-value" id="carbon-intensity">
+                        <span class="loading">⟳</span> Loading...
+                    </span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Source</span>
+                    <span class="stat-value" id="data-source">Loading...</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Last Fetched</span>
+                    <span class="stat-value" id="last-updated">Just now</span>
+                </div>
+                <div id="source-attribution" style="margin-top: 8px; font-size: 11px; opacity: 0.7; text-align: center;"></div>
             </div>
-            <div class="stat-item">
-                <span class="stat-label">Data Source</span>
-                <span class="stat-value" id="data-source">UK Grid</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Last Updated</span>
-                <span class="stat-value" id="last-updated">Just now</span>
-            </div>
-        </div>
 
-        <div class="status connected" id="connection-status">
-            ✅ Connected to carbon intensity API
+            <div class="calculation-section">
+                <h3 style="margin: 20px 0 12px 0; font-size: 16px; font-weight: 600;">Current Session Data</h3>
+                <div class="stat-item">
+                    <span class="stat-label">Total Leaves</span>
+                    <span class="stat-value" id="total-leaves">0 leaves</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Total Generated</span>
+                    <span class="stat-value" id="response-tokens">0 tokens</span>
+                </div>
+            </div>
+
+            <div class="reference-section">
+                <h3 style="margin: 20px 0 12px 0; font-size: 16px; font-weight: 600;">Environmental Reference</h3>
+                <div class="stat-item">
+                    <span class="stat-label">Energy per Token</span>
+                    <span>
+                        <span class="stat-value" id="energy-per-token">Loading...</span>
+                        <a href="#" target="_blank" class="stat-info-link" id="energy-per-token-link">ℹ️</a>
+                    </span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">CO₂ per Tree/Year</span>
+                    <span>
+                        <span class="stat-value" id="co2-per-tree">Loading...</span>
+                        <a href="#" target="_blank" class="stat-info-link" id="co2-per-tree-link">ℹ️</a>
+                    </span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Leaves per Tree</span>
+                    <span>
+                        <span class="stat-value" id="leaves-per-tree">Loading...</span>
+                        <a href="#" target="_blank" class="stat-info-link" id="leaves-per-tree-link">ℹ️</a>
+                    </span>
+                </div>
+            </div>
         </div>
 
         <button class="button" id="refresh-btn">
-            <span id="refresh-text">🔄 Refresh Data</span>
+            <span id="refresh-text">🔄</span> Refresh Carbon Intensity Data
         </button>
 
-        <div class="info">
-            <h4>How It Works</h4>
-            <p>Promptree estimates the carbon footprint of your ChatGPT conversations by:</p>
-            <ul style="margin: 8px 0; padding-left: 16px;">
-                <li>Calculating energy consumption per token</li>
-                <li>Using real-time grid carbon intensity</li>
-                <li>Converting to "trees needed" metric</li>
-            </ul>
-            <p>🇬🇧 Currently using UK National Grid data (free API) with global fallbacks.</p>
+        <div class="github-link" style="text-align: center; margin-top: 16px; padding: 12px;">
+            <a href="https://github.com/vanduc2514/promptree-ext" target="_blank" style="color: rgba(255, 255, 255, 0.8); text-decoration: none; font-size: 12px;">
+                ⭐ Star on GitHub
+            </a>
         </div>
     </div>
 
+    <script src="constants.js"></script>
     <script src="popup.js"></script>
 </body>
 </html>

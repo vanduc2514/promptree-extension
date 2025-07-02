@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Promptree",
   "version": "1.0",
-  "description": "See how many trees are impacted with each ChatGPT prompt you send. This extension adds an icon to the ChatGPT UI to show how many leaves or trees are impacted",
+  "description": "See how many trees are impacted with each prompt you send. This extension adds an icon to the Chat UI to show how many leaves or trees are impacted",
   "permissions": [
     "storage",
     "activeTab",
@@ -10,7 +10,8 @@
   ],
   "host_permissions": [
     "https://chat.openai.com/*",
-    "https://chatgpt.com/*"
+    "https://chatgpt.com/*",
+    "https://raw.githubusercontent.com/thegreenwebfoundation/co2.js/main/data/output/average-intensities.json"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -23,7 +24,7 @@
   "content_scripts": [
     {
       "matches": ["https://chat.openai.com/*", "https://chatgpt.com/*"],
-      "js": ["content.js"],
+      "js": ["constants.js", "content.js"],
       "run_at": "document_idle"
     }
   ],
@@ -34,5 +35,11 @@
   },
   "background": {
     "service_worker": "background.js"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["constants.js"],
+      "matches": ["https://chat.openai.com/*", "https://chatgpt.com/*"]
+    }
+  ]
 }

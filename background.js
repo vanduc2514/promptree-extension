@@ -1,9 +1,22 @@
 // Service Worker for Promptree Chrome Extension
 // Handles background tasks and API requests
 
-// Store carbon intensity data with caching
-chrome.runtime.onInstalled.addListener(() => {
+// Initialize carbon intensity data when extension is installed/enabled
+chrome.runtime.onInstalled.addListener(async () => {
   console.log('Promptree: Extension installed successfully! 🌲');
+
+  // Fetch initial carbon intensity data
+  try {
+    await initializeCarbonData();
+    console.log('Promptree: Initial carbon intensity data loaded');
+  } catch (error) {
+    console.error('Promptree: Failed to load initial carbon intensity data:', error);
+  }
+});
+
+// Also initialize on startup (browser restart, extension enable)
+chrome.runtime.onStartup.addListener(async () => {
+  console.log('Promptree: Extension starting up');
 });
 
 // Handle messages from content script
@@ -16,26 +29,62 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
-// Function to fetch carbon intensity from multiple sources
-async function fetchCarbonIntensityData() {
-  // Try UK API first (free and reliable)
+// Initialize carbon intensity data in storage
+async function initializeCarbonData() {
   try {
-    const response = await fetch('https://api.carbonintensity.org.uk/intensity');
-    if (response.ok) {
-      const data = await response.json();
-      if (data.data && data.data.length > 0 && data.data[0].intensity) {
-        const intensity = data.data[0].intensity.actual || data.data[0].intensity.forecast;
-        if (intensity) {
-          console.log(`Promptree Background: UK Carbon intensity: ${intensity} gCO2/kWh`);
-          return intensity;
-        }
-      }
-    }
+    const carbonData = await fetchCarbonIntensityFromCO2js();
+    const now = new Date();
+
+    await chrome.storage.local.set({
+      carbonIntensity: carbonData.intensity,
+      dataSource: carbonData.source,
+      lastUpdated: now.toISOString(),
+      isExternalData: true
+    });
+
+    console.log(`Promptree: Initialized with ${carbonData.intensity} gCO₂/kWh from ${carbonData.source}`);
   } catch (error) {
-    console.warn('Promptree Background: UK API failed:', error);
+    console.warn('Promptree: Failed to initialize carbon data:', error);
+
+    // Set fallback values
+    await chrome.storage.local.set({
+      carbonIntensity: 473,
+      dataSource: 'Static Fallback (Ember 2024)',
+      lastUpdated: new Date().toISOString(),
+      isExternalData: false
+    });
+  }
+}
+
+// Function to fetch carbon intensity from CO2.js global data
+async function fetchCarbonIntensityFromCO2js() {
+  const response = await fetch('https://raw.githubusercontent.com/thegreenwebfoundation/co2.js/main/data/output/average-intensities.json');
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}: Failed to fetch from CO2.js data source`);
   }
 
-  // Fallback to global average
-  console.log('Promptree Background: Using fallback carbon intensity');
-  return 475; // Global average
+  const data = await response.json();
+
+  // Extract "World" (global average) value only
+  if (data && data.World && typeof data.World.emissions_intensity_gco2_per_kwh === 'number') {
+    return {
+      intensity: Math.round(data.World.emissions_intensity_gco2_per_kwh),
+      source: 'CO2.js (Ember)',
+      year: data.World.year || 'Latest'
+    };
+  }
+
+  throw new Error('World data not found in CO2.js source');
+}
+
+// Function to fetch carbon intensity data (legacy support)
+async function fetchCarbonIntensityData() {
+  try {
+    const carbonData = await fetchCarbonIntensityFromCO2js();
+    return carbonData.intensity;
+  } catch (error) {
+    console.warn('Promptree Background: CO2.js API failed, using fallback:', error);
+    return 473; // Ember 2024 global average fallback
+  }
 }

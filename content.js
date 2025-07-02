@@ -1,67 +1,37 @@
 // ==============================================================================
-//  PROMPTREE: CARBON INTENSITY ESTIMATION EXTENSION (JUNE 2025)
+//  PROMPTREE: CARBON INTENSITY ESTIMATION FROM AI EXTENSION
 // ==============================================================================
 
-// ==============================================================================
-//  CONFIG - Constants and Configuration
-// ==============================================================================
-
-// CONSTANT 1: ENERGY CONSUMPTION PER TOKEN (kWh/token)
-// SOURCE: Based on analyses of modern GPU (e.g., NVIDIA H100) power draw.
-// URL: https://www.nature.com/articles/s41598-024-76682-6
-// VALUE: Generating ~350 tokens draws ~0.008 kWh. This gives us an average.
-const KWH_PER_TOKEN = 0.0000228; // (0.008 kWh / 350 tokens)
-
-// CONSTANT 2: GRAMS OF CO2 ABSORBED PER TREE PER YEAR
-// SOURCE: U.S. Environmental Protection Agency (EPA) Greenhouse Gas Equivalencies Calculator.
-// URL: https://www.epa.gov/energy/greenhouse-gases-equivalencies-calculator-calculations-and-references
-// VALUE: Based on EPA calculations, one tree absorbs approximately 22 kg CO2 per year.
-const GCO2_PER_TREE_PER_YEAR = 22000;
-
-// CONSTANT 3: CHARACTER-TO-TOKEN ESTIMATION RATIO
-// SOURCE: OpenAI Help Center - "What are tokens and how to count them?"
-// URL: https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
-// VALUE: "1 token ~= 4 chars in English" as stated in OpenAI documentation.
-const CHARS_PER_TOKEN = 4;
-
-// CONSTANT 4: FALLBACK CARBON INTENSITY (gCO2e/kWh)
-// SOURCE: Global average carbon intensity (updated 2025).
-// URL: https://www.iea.org/reports/electricity-2025
-const GLOBAL_CARBON_INTENSITY = 445;
-
-// Display Configuration
-const LEAVES_PER_TREE = 250000; // Conservative estimate of leaves per mature tree
-
-// State Variables
-let currentCarbonIntensity = GLOBAL_CARBON_INTENSITY;
+let currentCarbonIntensity = 0; // Will be loaded from storage (background.js handles initialization)
 let currentInputTokens = 0; // Current input token count
 let lastSentTokens = 0; // Token count of the last sent message
-
-// ==============================================================================
-//  API - Carbon Intensity Data Fetching
-// ==============================================================================
-
-// TODO: Implement API integration for dynamic carbon intensity fetching
-// Planned APIs: Electricity Maps, WattTime, or regional carbon intensity services
-// For now, using static fallback value defined in CONFIG section
-
-/**
- * Initialize carbon intensity data (currently using static fallback)
- */
-function initializeCarbonData() {
-  // TODO: Replace with actual API calls when implemented
-  console.log(`Promptree: Current carbon intensity: ${currentCarbonIntensity} gCO2/kWh`);
-}
+let totalResponseTokens = 0; // Total tokens in all AI responses
+let totalResponseLeaves = 0; // Total leaves impact from all AI responses
 
 // ==============================================================================
 //  UTILS - Helper Functions
 // ==============================================================================
 
+async function loadCarbonIntensityFromStorage() {
+  try {
+    const stored = await chrome.storage.local.get(['carbonIntensity']);
+
+    if (stored.carbonIntensity && typeof stored.carbonIntensity === 'number') {
+      currentCarbonIntensity = stored.carbonIntensity;
+      console.log(`Promptree: Loaded carbon intensity: ${currentCarbonIntensity} gCO₂/kWh`);
+    } else {
+      console.log(`Promptree: Using fallback carbon intensity: ${currentCarbonIntensity} gCO₂/kWh`);
+    }
+  } catch (error) {
+    console.warn('Promptree: Failed to load carbon intensity from storage, using fallback:', error);
+  }
+}
+
 /**
  * Estimates token count from text length
  */
 function estimateTokens(text) {
-  return Math.ceil(text.length / CHARS_PER_TOKEN);
+  return Math.ceil(text.length / EXTENSION_CONSTANTS.CHARS_PER_TOKEN.value);
 }
 
 /**
@@ -70,9 +40,9 @@ function estimateTokens(text) {
  * @returns {number} The estimated number of trees.
  */
 function calculateTrees(tokenCount) {
-  const totalKwh = tokenCount * KWH_PER_TOKEN;
+  const totalKwh = tokenCount * EXTENSION_CONSTANTS.KWH_PER_TOKEN.value;
   const totalGCO2e = totalKwh * currentCarbonIntensity; // Using the dynamic value
-  return totalGCO2e / GCO2_PER_TREE_PER_YEAR;
+  return totalGCO2e / EXTENSION_CONSTANTS.GCO2_PER_TREE_PER_YEAR.value;
 }
 
 /**
@@ -86,7 +56,7 @@ function formatTreeCount(trees) {
     // 1 or more trees
     const wholeTreesFloor = Math.floor(trees);
     const remainingFraction = trees - wholeTreesFloor;
-    const remainingLeaves = Math.floor(remainingFraction * LEAVES_PER_TREE);
+    const remainingLeaves = Math.floor(remainingFraction * EXTENSION_CONSTANTS.LEAVES_PER_TREE.value);
 
     if (remainingLeaves === 0 || trees >= 0.95) {
       // Nearly a whole number of trees or no significant leaves
@@ -97,7 +67,7 @@ function formatTreeCount(trees) {
     }
   } else {
     // Less than 1 tree - convert to leaves
-    const totalLeaves = Math.floor(trees * LEAVES_PER_TREE);
+    const totalLeaves = Math.floor(trees * EXTENSION_CONSTANTS.LEAVES_PER_TREE.value);
 
     if (totalLeaves >= 1000) {
       // Too many leaves - convert back to trees for readability
@@ -109,24 +79,6 @@ function formatTreeCount(trees) {
       return `🍃 <1 leaf`;
     }
   }
-}
-
-/**
- * Gets a more detailed tooltip with calculation breakdown
- */
-function getDetailedTooltip(tokens, trees) {
-  const kwh = (tokens * KWH_PER_TOKEN).toFixed(6);
-  const gco2 = (kwh * currentCarbonIntensity).toFixed(3);
-
-  return `Calculation breakdown:
-~${tokens} tokens
-~${kwh} kWh energy
-~${gco2} g CO2 emissions
-@ ${currentCarbonIntensity} gCO2/kWh
-≈ ${formatTreeCount(trees)}
-
-🌲 1 tree absorbs 22kg CO2/year
-🍃 1 tree ≈ 250,000 leaves worth of absorption`;
 }
 
 // ==============================================================================
@@ -216,7 +168,7 @@ function updateInputIcon() {
   currentInputTokens = tokens;
 
   if (tokens > 0) {
-    const tokenText = tokens === 1 ? '~1 token' : `~${tokens} tokens`;
+    const tokenText = tokens === 1 ? '1 token' : `${tokens} tokens`;
     icon.textContent = tokenText;
     icon.style.display = 'flex';
   } else {
@@ -228,8 +180,9 @@ function updateInputIcon() {
  * Adds tree count icons to AI assistant response messages
  */
 function addResponseIcons() {
-  // Calculate total accumulated trees from AI assistant responses only
-  let totalAccumulated = 0;
+  // Reset totals and recalculate from all responses
+  totalResponseTokens = 0;
+  totalResponseLeaves = 0;
 
   // Look for AI assistant messages
   const assistantMessages = document.querySelectorAll('[data-message-author-role="assistant"]');
@@ -240,9 +193,11 @@ function addResponseIcons() {
 
     const tokens = estimateTokens(textContent);
     const trees = calculateTrees(tokens);
+    const leaves = Math.floor(trees * EXTENSION_CONSTANTS.LEAVES_PER_TREE.value);
 
-    // Add this response to total (only AI responses, not user inputs)
-    totalAccumulated += trees;
+    // Add this response to totals
+    totalResponseTokens += tokens;
+    totalResponseLeaves += leaves;
 
     // Check if icon already exists
     let existingIcon = messageElement.querySelector('.promptree-assistant-icon');
@@ -254,17 +209,15 @@ function addResponseIcons() {
 
       if (treeIconSpan && accumulatedIconSpan) {
         const newTreeDisplay = formatTreeCount(trees);
-        const newTooltip = getDetailedTooltip(tokens, trees);
 
         // Only update if the display has changed (response is still growing)
         if (treeIconSpan.textContent !== newTreeDisplay) {
           treeIconSpan.textContent = newTreeDisplay;
-          treeIconSpan.title = newTooltip;
           treeIconSpan.dataset.previousText = textContent;
 
           // Update accumulated trees display with recalculated total
-          accumulatedIconSpan.textContent = `Total: ${formatTreeCount(totalAccumulated)}`;
-          console.log(`Promptree: Updated response - current: ${trees.toFixed(6)}, total AI responses: ${totalAccumulated.toFixed(6)}`);
+          const totalTrees = totalResponseLeaves / EXTENSION_CONSTANTS.LEAVES_PER_TREE.value;
+          accumulatedIconSpan.textContent = `Total: ${formatTreeCount(totalTrees)}`;
         }
       }
       return;
@@ -293,13 +246,11 @@ function addResponseIcons() {
       background: rgba(5, 150, 105, 0.1);
       padding: 4px 8px;
       border-radius: 6px;
-      cursor: help;
       user-select: none;
       border: 1px solid rgba(5, 150, 105, 0.2);
       color: #059669;
     `;
     treeIcon.textContent = formatTreeCount(trees);
-    treeIcon.title = getDetailedTooltip(tokens, trees);
     treeIcon.dataset.previousText = textContent;
 
     // Accumulated trees icon with teal color scheme and "Total:" prefix
@@ -313,13 +264,12 @@ function addResponseIcons() {
       border: 1px solid rgba(8, 145, 178, 0.2);
       color: #0891b2;
     `;
-    accumulatedIcon.textContent = `Total: ${formatTreeCount(totalAccumulated)}`;
+    const totalTrees = totalResponseLeaves / EXTENSION_CONSTANTS.LEAVES_PER_TREE.value;
+    accumulatedIcon.textContent = `Total: ${formatTreeCount(totalTrees)}`;
 
     iconContainer.appendChild(treeIcon);
     iconContainer.appendChild(accumulatedIcon);
     messageElement.appendChild(iconContainer);
-
-    console.log(`Promptree: New response - current: ${trees.toFixed(6)}, total AI responses: ${totalAccumulated.toFixed(6)}`);
   });
 }
 
@@ -384,14 +334,35 @@ function addUserMessageIcon() {
 }
 
 // ==============================================================================
+//  MESSAGE HANDLING - Communication with popup
+// ==============================================================================
+
+/**
+ * Handle messages from popup script
+ */
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'getTokenCount') {
+    // Calculate total leaves from AI responses
+    const totalTrees = totalResponseTokens > 0 ? calculateTrees(totalResponseTokens) : 0;
+    const totalLeaves = Math.floor(totalTrees * EXTENSION_CONSTANTS.LEAVES_PER_TREE.value);
+
+    sendResponse({
+      totalLeaves: totalLeaves,
+      responseTokens: totalResponseTokens
+    });
+    return true; // Indicate we will send a response
+  }
+});
+
+// ==============================================================================
 //  MAIN - Initialization and Event Handling
 // ==============================================================================
 
 /**
  * Initialize the extension
  */
-function initializeExtension() {
-  initializeCarbonData();
+async function initializeExtension() {
+  await loadCarbonIntensityFromStorage();
 
   // Set up UI update intervals
   setInterval(updateInputIcon, 500);
@@ -414,4 +385,6 @@ function initializeExtension() {
 }
 
 // Start the extension
-initializeExtension();
+(async () => {
+  await initializeExtension();
+})();
