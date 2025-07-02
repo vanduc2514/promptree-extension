@@ -8,26 +8,32 @@
 
 // CONSTANT 1: ENERGY CONSUMPTION PER TOKEN (kWh/token)
 // SOURCE: Based on analyses of modern GPU (e.g., NVIDIA H100) power draw.
+// URL: https://www.nature.com/articles/s41598-024-76682-6
 // VALUE: Generating ~350 tokens draws ~0.008 kWh. This gives us an average.
 const KWH_PER_TOKEN = 0.0000228; // (0.008 kWh / 350 tokens)
 
 // CONSTANT 2: GRAMS OF CO2 ABSORBED PER TREE PER YEAR
-// SOURCE: U.S. Department of Agriculture (USDA) Forest Service.
+// SOURCE: U.S. Environmental Protection Agency (EPA) Greenhouse Gas Equivalencies Calculator.
+// URL: https://www.epa.gov/energy/greenhouse-gases-equivalencies-calculator-calculations-and-references
+// VALUE: Based on EPA calculations, one tree absorbs approximately 22 kg CO2 per year.
 const GCO2_PER_TREE_PER_YEAR = 22000;
 
 // CONSTANT 3: CHARACTER-TO-TOKEN ESTIMATION RATIO
-// SOURCE: OpenAI Help Center.
+// SOURCE: OpenAI Help Center - "What are tokens and how to count them?"
+// URL: https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
+// VALUE: "1 token ~= 4 chars in English" as stated in OpenAI documentation.
 const CHARS_PER_TOKEN = 4;
 
 // CONSTANT 4: FALLBACK CARBON INTENSITY (gCO2e/kWh)
 // SOURCE: Global average carbon intensity (updated 2025).
-const FALLBACK_CARBON_INTENSITY = 475;
+// URL: https://www.iea.org/reports/electricity-2025
+const GLOBAL_CARBON_INTENSITY = 445;
 
 // Display Configuration
 const LEAVES_PER_TREE = 250000; // Conservative estimate of leaves per mature tree
 
 // State Variables
-let currentCarbonIntensity = FALLBACK_CARBON_INTENSITY; // Using static fallback value
+let currentCarbonIntensity = GLOBAL_CARBON_INTENSITY;
 let currentInputTokens = 0; // Current input token count
 let lastSentTokens = 0; // Token count of the last sent message
 
@@ -340,7 +346,7 @@ function addUserMessageIcon() {
       // Update existing icon if content has changed
       const iconSpan = existingIcon.querySelector('span');
       if (iconSpan) {
-        const newDisplay = tokens === 1 ? '~1 token' : `~${tokens} tokens`;
+        const newDisplay = tokens === 1 ? '1 token' : `${tokens} tokens`;
 
         // Only update if the display has changed
         if (iconSpan.textContent !== newDisplay) {
@@ -370,7 +376,7 @@ function addUserMessageIcon() {
       user-select: none;
       border: 1px solid rgba(59, 130, 246, 0.2);
     `;
-    icon.textContent = tokens === 1 ? '~1 token' : `~${tokens} tokens`;
+    icon.textContent = tokens === 1 ? '1 token' : `${tokens} tokens`;
 
     iconContainer.appendChild(icon);
     messageElement.appendChild(iconContainer);
