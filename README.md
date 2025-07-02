@@ -1,196 +1,92 @@
 # Promptree Chrome Extension
 
-A Chrome extension that estimates the environmental impact of your ChatGPT conversations by calculating their carbon footprint in real-time.
+A Chrome extension that shows how many trees your AI conversations would need to offset their environmental impact. Turn your prompts into a visual forest of leaves and trees.
 
-## 🌲 Features
+## Features
 
-- **Real-time Carbon Intensity**: Uses live data from UK National Grid and other reliable sources
-- **Token-based Calculations**: Estimates energy consumption per AI token generated
-- **Visual Indicators**: Shows tree equivalents needed to offset CO2 emissions
-- **Multiple Data Sources**: Falls back to global averages when regional data unavailable
-- **Privacy-focused**: No data collection, all calculations done locally
+- **Global Carbon Intensity Data**: Uses CO2.js dataset from The Green Web Foundation (Ember)
+- **Real-time Token Tracking**: Monitors input and response tokens in ChatGPT conversations
+- **Tree/Leaf Visualization**: Converts CO2 emissions to intuitive tree and leaf equivalents
+- **Session Tracking**: Displays cumulative environmental impact during each chat session
+- **Privacy-focused**: All calculations performed locally, no user data collected
 
-## 🔌 Data Sources
+## Data Sources
 
-### Primary: UK Carbon Intensity API (FREE)
-- **Provider**: National Energy System Operator (NESO)
-- **Coverage**: Great Britain (England, Scotland, Wales)
-- **API**: `https://api.carbonintensity.org.uk/`
-- **License**: Creative Commons (CC BY 4.0)
-- **Rate Limits**: None specified
-- **Status**: ✅ Fully operational and free
+### Primary: CO2.js Global Dataset
+- **Provider**: The Green Web Foundation (Ember data)
+- **Coverage**: Global average carbon intensity
+- **API**: GitHub raw content from co2.js repository
+- **License**: Open source
+- **Status**: Active and maintained
 
-### Fallback: Global Average
-- **Value**: 475 gCO2/kWh (global average for 2025)
-- **Used when**: API unavailable or user outside supported regions
+### Fallback: Static Data
+- **Value**: 473 gCO2/kWh (global average for 2024)
+- **Used when**: API unavailable or network issues
 
-### Optional: Electricity Maps API
-- **Provider**: Electricity Maps
-- **Coverage**: 200+ zones globally
-- **Free Tier**: 1 zone, 50 calls/hour
-- **Status**: Available with API key (free tier)
+## Installation
 
-## ⚙️ Installation
+1. Download or clone this repository
+2. Open Chrome and navigate to `chrome://extensions/`
+3. Enable Developer Mode (toggle in top right)
+4. Click "Load unpacked" and select the `promptree-ext` folder
+5. Pin the extension for easy access
 
-1. **Download or Clone** this repository
-2. **Open Chrome** and navigate to `chrome://extensions/`
-3. **Enable Developer Mode** (toggle in top right)
-4. **Click "Load unpacked"** and select the `promptree-ext` folder
-5. **Pin the extension** for easy access
-
-## 📊 How It Works
+## How It Works
 
 ### Calculation Methodology
 
-1. **Token Estimation**: Text length ÷ 4 characters per token (OpenAI standard)
-2. **Energy Consumption**: ~0.0000228 kWh per token (based on GPU analysis)
-3. **Carbon Emissions**: Energy × Regional Carbon Intensity
-4. **Tree Equivalent**: CO2 emissions ÷ 22kg CO2 absorbed per tree per year
+1. **Token Estimation**: Text length divided by 4 characters per token (OpenAI standard)
+2. **Energy Consumption**: 0.0000228 kWh per token (based on GPU analysis research)
+3. **Carbon Emissions**: Energy consumption multiplied by carbon intensity
+4. **Tree Equivalent**: CO2 emissions divided by 22kg CO2 absorbed per tree per year
+5. **Leaf Equivalent**: Tree value multiplied by 250,000 leaves per tree
 
 ### Example Calculation
 ```
-100 tokens → 0.00228 kWh → 1.08g CO2 (at 475 gCO2/kWh) → 4.9e-5 trees
+100 tokens → 0.00228 kWh → 1.08g CO2 (at 473 gCO2/kWh) → 0.000049 trees → 12 leaves
 ```
 
-## 🔧 Technical Details
+## Browser Compatibility
 
-### Constants Used
-- **Energy per token**: 0.0000228 kWh (derived from NVIDIA H100 analysis)
-- **CO2 per tree**: 22,000g CO2/year (USDA Forest Service)
-- **Characters per token**: 4 (OpenAI documentation)
-- **Fallback carbon intensity**: 475 gCO2/kWh (global average)
+- **Chrome**: Full support (Manifest V3)
+- **Edge**: Compatible (Chromium-based)
+- **Firefox**: Not currently supported (different extension API)
 
-### API Endpoints
-```javascript
-// UK Carbon Intensity (Primary)
-GET https://api.carbonintensity.org.uk/intensity
+## Privacy and Security
 
-// Response format:
-{
-  "data": [{
-    "from": "2025-06-29T12:00Z",
-    "to": "2025-06-29T12:30Z",
-    "intensity": {
-      "forecast": 266,
-      "actual": 263,
-      "index": "moderate"
-    }
-  }]
-}
-```
+- **No data collection**: Extension does not transmit user conversations or personal data
+- **Local processing**: All calculations performed in the browser
+- **HTTPS only**: External API calls use secure connections
+- **Minimal permissions**: Only accesses ChatGPT domains and carbon intensity data
 
-## 🛡️ Privacy & Security
+## Contributing
 
-- **No data collection**: All calculations performed locally
-- **No tracking**: Extension doesn't send user data anywhere
-- **HTTPS only**: All API calls use secure connections
-- **Minimal permissions**: Only requests access to ChatGPT domains
+Areas for improvement:
+1. **Additional AI Platforms**: Support for Claude, Gemini, and other chatbots
+2. **Regional Data Sources**: Integration of local carbon intensity APIs
+3. **Enhanced Calculations**: More precise energy consumption models
+4. **User Interface**: Improved visual design and accessibility
+5. **Performance**: Optimization for large conversation sessions
 
-## 🌍 Supported Regions
+## References
 
-### Full Support (Real-time data)
-- 🇬🇧 **United Kingdom**: England, Scotland, Wales
-- 📡 **Data source**: NESO Carbon Intensity API
+- [Nature Scientific Reports - GPU Power Analysis](https://www.nature.com/articles/s41598-024-76682-6)
+- [EPA Greenhouse Gas Equivalencies Calculator](https://www.epa.gov/energy/greenhouse-gases-equivalencies-calculator-calculations-and-references)
+- [USDA Forest Service - Tree Data](https://www.fs.usda.gov/foresthealth/technology/pdfs/FHTET-05-02.pdf)
+- [OpenAI Token Documentation](https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them)
+- [CO2.js by The Green Web Foundation](https://github.com/thegreenwebfoundation/co2.js)
 
-### Global Fallback
-- 🌐 **All other regions**: Global average carbon intensity
-- 📊 **Accuracy**: Reasonable estimate for worldwide usage
+## License
 
-### Future Expansion
-- 🇪🇺 **European Union**: Could integrate ENTSO-E API
-- 🇺🇸 **United States**: Regional grid operators (ISO/RTO data)
-- 🌏 **Other regions**: Additional APIs as available
+This project is licensed under the MIT License. See the LICENSE file for details.
 
-## 🔄 Updates & Caching
+## Disclaimer
 
-- **Cache duration**: 30 minutes for carbon intensity data
-- **Auto-refresh**: Background updates every 10 minutes when active
-- **Manual refresh**: Available via popup interface
-- **Offline resilience**: Uses last known data when APIs unavailable
-
-## 📁 Project Structure
-
-```
-promptree-ext/
-├── manifest.json          # Chrome extension manifest
-├── background.js           # Extension background script
-├── content.js              # Main extension content script
-├── popup.html             # Extension popup interface
-├── popup.js               # Popup functionality
-├── images/                # Extension icons (16px, 48px, 128px)
-├── package.json           # Node.js dependencies
-├── README.md              # This file
-└── prompt/                # Development & documentation files
-    ├── README.md          # Development files documentation
-    ├── setup.sh           # Project setup script
-    ├── install.sh         # Extension installation helper
-    ├── TESTING_GUIDE.md   # Testing instructions
-    └── test-*.js/html     # Test files and validation scripts
-```
-
-### Core Extension Files
-The root directory contains only the essential files needed for the Chrome extension to function:
-- Extension manifest and scripts
-- UI components (popup)
-- Icon assets
-- Project configuration
-
-### Development Files
-The `prompt/` folder contains all development, testing, and documentation files that support the extension but aren't part of the core functionality.
-
-## 📝 License
-
-This project is licensed under the MIT License - see below for details.
-
-```
-MIT License
-
-Copyright (c) 2025 Promptree
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
-
-## 🤝 Contributing
-
-Contributions are welcome! Areas for improvement:
-
-1. **Additional APIs**: Integrate more regional carbon intensity sources
-2. **Better UI**: Improve visual design and user experience
-3. **Enhanced calculations**: More accurate energy consumption models
-4. **Localization**: Support for multiple languages
-5. **Analytics**: Optional usage statistics (privacy-preserving)
-
-## 📚 References
-
-- [UK Carbon Intensity API Documentation](https://carbon-intensity.github.io/api-definitions/)
-- [Electricity Maps API](https://api-portal.electricitymaps.com/)
-- [OpenAI Tokenizer Information](https://help.openai.com/en/articles/4936856)
-- [USDA Forest Carbon Data](https://www.usda.gov/)
-- [Chrome Extension Development Guide](https://developer.chrome.com/docs/extensions/)
-
-## ⚠️ Disclaimer
-
-This extension provides estimates based on publicly available data and research. Actual environmental impact may vary based on numerous factors including:
+This extension provides estimates based on publicly available research and data. Actual environmental impact may vary based on factors including:
 
 - Regional energy mix variations
-- AI model efficiency improvements
+- AI model efficiency changes
 - Data center renewable energy usage
-- Seasonal carbon intensity changes
+- Carbon intensity fluctuations
 
-Use these estimates as general guidance rather than precise measurements.
+These estimates should be used as general guidance rather than precise measurements.
