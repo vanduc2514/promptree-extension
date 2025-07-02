@@ -2,6 +2,10 @@
 
 A Chrome extension that shows how many trees your AI conversations would need to offset their environmental impact. Turn your prompts into a visual forest of leaves and trees.
 
+<p align="center">
+    <img src="images/extension.png" alt="Extension Screenshot" width="40%" />
+</p>
+
 ## Features
 
 - **Global Carbon Intensity Data**: Uses CO2.js dataset from The Green Web Foundation (Ember)
