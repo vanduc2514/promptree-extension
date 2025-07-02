@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Promptree",
   "version": "1.0",
-  "description": "See how many trees are impacted with each prompt you send. This extension adds an icon to the Chat UI to show how many leaves or trees are impacted",
+  "description": "See how many trees are impacted with each prompt you send to an AI, visible in Chatbot UI",
   "permissions": [
     "storage",
     "activeTab",
